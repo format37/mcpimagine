@@ -28,7 +28,6 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 
 from image_tools import DEFAULT_MODEL, register_image_tools
-from notes_tools import register_notes_tools
 
 load_dotenv(".env")
 
@@ -53,8 +52,7 @@ logger.info("Service name: %s  stream path: %s", _safe_name, STREAM_PATH)
 DATA_DIR = Path(os.getenv("MCP_DATA_DIR", "./data")).resolve()
 IMAGES_DIR = DATA_DIR / "images"
 REQUESTS_DIR = DATA_DIR / "requests"
-NOTES_DIR = DATA_DIR / "tool_notes"
-for d in (IMAGES_DIR, REQUESTS_DIR, NOTES_DIR):
+for d in (IMAGES_DIR, REQUESTS_DIR):
     d.mkdir(parents=True, exist_ok=True)
 
 ASSETS_ROUTE = f"{BASE_PATH}/assets"
@@ -140,7 +138,6 @@ logging.getLogger().addFilter(_redaction_filter)
 
 # --- Register tools + resources -------------------------------------------
 register_image_tools(mcp, IMAGES_DIR, REQUESTS_DIR, PUBLIC_ASSET_BASE_URL)
-register_notes_tools(mcp, NOTES_DIR, REQUESTS_DIR)
 
 
 @mcp.resource(
@@ -157,7 +154,6 @@ def get_documentation_resource() -> str:
   Text -> image.
 - `edit_image(prompt, image_urls=[], image_base64=[], aspect_ratio="1:1", image_size="2K", model="pro")`
   Input image(s) + instruction -> edited / composed image.
-- `save_tool_notes` / `read_tool_notes` — knowledge base.
 
 ## Models
 - `pro`  = gemini-3-pro-image-preview (Nano Banana Pro) — best quality + text rendering. Default.

@@ -11,7 +11,6 @@ Each result returns an inline preview plus an HTTPS link to the persisted full-r
 |------|---------|
 | `generate_image(prompt, aspect_ratio="1:1", image_size="2K", model="pro", grounding=False)` | text → image |
 | `edit_image(prompt, image_urls=[], image_base64=[], aspect_ratio="1:1", image_size="2K", model="pro")` | source image(s) + instruction → image |
-| `save_tool_notes` / `read_tool_notes` | file-backed notes |
 
 `model`: `pro` = `gemini-3-pro-image-preview` (best quality, optional Google-Search grounding) ·
 `flash` = `gemini-3.1-flash-image-preview` (faster).
@@ -68,6 +67,6 @@ Operational defaults live in `docker-compose.yml`; optional overrides are listed
 ## Layout
 
 ```
-backend/  server.py · image_tools.py · notes_tools.py · mcp_image_utils.py · request_logger.py · Dockerfile
+backend/  server.py · image_tools.py · mcp_image_utils.py · request_logger.py · Dockerfile
 docker-compose.yml · compose.sh · logs.sh · Caddyfile.snippet
 ```

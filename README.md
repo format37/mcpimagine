@@ -33,15 +33,28 @@ Add the block from `Caddyfile.snippet` to the Caddy site, then
 
 ## Connect a client
 
+**Claude Desktop / Claude Code / `mcp-remote`** — Bearer header (preferred):
+
 ```json
 { "mcpServers": { "imagine": { "command": "npx",
   "args": ["mcp-remote", "https://scriptlab.duckdns.org/imagine/",
            "--header", "Authorization: Bearer <MCP_TOKEN>"] } } }
 ```
 
-Bearer header is preferred. URL-token form `…/imagine/<MCP_TOKEN>/` also works
-(tokens are redacted from logs). Generated asset URLs (`/imagine/assets/<uuid>.jpg`)
-are public via unguessable UUIDs. Health: `curl https://scriptlab.duckdns.org/imagine/health`.
+Claude Code one-liner: `claude mcp add --transport http imagine https://scriptlab.duckdns.org/imagine/ --header "Authorization: Bearer <MCP_TOKEN>" --scope user`
+
+**Claude web (claude.ai)** — custom connectors support only OAuth/no-auth (no static
+headers), so put the token in the URL path instead. Settings → Connectors →
+**Add custom connector**, URL (keep the trailing slash, leave OAuth fields blank):
+
+```
+https://scriptlab.duckdns.org/imagine/<MCP_TOKEN>/
+```
+
+Requires a paid plan. Tokens in the URL are redacted from logs.
+
+Generated asset URLs (`/imagine/assets/<uuid>.jpg`) are public via unguessable UUIDs.
+Health: `curl https://scriptlab.duckdns.org/imagine/health`.
 
 ## Configuration (`.env`)
 

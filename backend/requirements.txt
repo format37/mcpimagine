@@ -1,0 +1,8 @@
+mcp==1.26.0
+starlette>=0.28.0
+uvicorn[standard]>=0.31.1
+google-genai==2.8.0
+pillow>=11.0.0
+requests>=2.32.0
+python-dotenv>=1.0.0
+sentry-sdk>=2.0.0

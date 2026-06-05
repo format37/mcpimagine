@@ -1,0 +1,14 @@
+# Add inside the scriptlab.duckdns.org { ... } site block in ~/reverse-proxy/Caddyfile.
+# Preserve the /imagine prefix (the app + its /imagine/assets static route both
+# live under /imagine), so use `handle`, NOT `handle_path`.
+# Place it with the other per-service handle blocks (order: specific before broad).
+#
+# After editing:
+#   sudo docker exec reverse-proxy caddy reload --config /etc/caddy/Caddyfile
+
+handle /imagine* {
+    # Generated images have immutable UUID URLs -> cache aggressively.
+    @assets path /imagine/assets/*
+    header @assets Cache-Control "public, max-age=31536000, immutable"
+    reverse_proxy mcp-imagine:8012
+}

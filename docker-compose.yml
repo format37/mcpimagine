@@ -1,0 +1,33 @@
+services:
+  mcp-imagine:
+    container_name: mcp-imagine
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - PORT=8012
+      - TZ=UTC
+      - MCP_NAME=imagine
+      - GEMINI_IMAGE_MODEL=gemini-3-pro-image-preview
+      - MCP_PUBLIC_BASE_URL=https://scriptlab.duckdns.org
+      - MCP_ALLOWED_HOSTS=scriptlab.duckdns.org
+      - MCP_REQUIRE_AUTH=true
+      - MCP_ALLOW_URL_TOKENS=true
+    expose:
+      - "8012"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - default
+      - mcp-shared
+
+networks:
+  mcp-shared:
+    external: true

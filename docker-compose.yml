@@ -13,6 +13,7 @@ services:
       - GEMINI_IMAGE_MODEL=gemini-3-pro-image-preview
       - MCP_PUBLIC_BASE_URL=https://scriptlab.duckdns.org
       - MCP_ALLOWED_HOSTS=scriptlab.duckdns.org
+      - MCP_HOST_IMAGES_DIR=${PWD}/data/images
       - MCP_REQUIRE_AUTH=true
       - MCP_ALLOW_URL_TOKENS=true
     expose:

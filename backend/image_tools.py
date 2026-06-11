@@ -212,8 +212,12 @@ def _persist_and_respond(
     image_size: str,
     images_dir: Path,
     public_asset_base: Optional[str],
+    host_images_dir: Optional[str] = None,
 ) -> List[Any]:
-    """Save full-res image, build inline preview, return [preview, info_text]."""
+    """Save full-res image, build inline preview, return [info_text, preview].
+
+    The info text comes FIRST so the saved-file path and download URL survive
+    even if the client truncates the response after the large inline image."""
     # Validate the bytes decode to a real image BEFORE persisting, so a corrupt
     # response from the model never leaves a junk file on disk.
     try:
@@ -239,8 +243,11 @@ def _persist_and_respond(
     ).to_image_content()
 
     public_url = f"{public_asset_base}/{filename}" if public_asset_base else None
+    saved_dir = host_images_dir.rstrip("/") if host_images_dir else str(images_dir)
+    saved_path = f"{saved_dir}/{filename}"
 
     info: List[str] = []
+    info.append(f"Saved file: {saved_path}")
     if public_url:
         info.append(f"Full-resolution image: {public_url}")
     else:
@@ -255,7 +262,9 @@ def _persist_and_respond(
     if model_text:
         info.append(f"Model note: {model_text.strip()}")
 
-    return [preview_content, "\n".join(info)]
+    # Text first: if the client truncates after the inline preview, the path
+    # and URL are still delivered.
+    return ["\n".join(info), preview_content]
 
 
 def register_image_tools(
@@ -263,6 +272,7 @@ def register_image_tools(
     images_dir: Path,
     requests_dir: Path,
     public_asset_base: Optional[str],
+    host_images_dir: Optional[str] = None,
 ):
     """Register generate_image and edit_image tools on the FastMCP instance."""
 
@@ -316,12 +326,12 @@ def register_image_tools(
 
             result = _persist_and_respond(
                 image_bytes, mime, text, model_id, aspect_ratio, image_size,
-                images_dir, public_asset_base,
+                images_dir, public_asset_base, host_images_dir,
             )
             # Log only the text part (never the image bytes).
             log_request(
                 requests_dir, requester, tool_name, log_input,
-                result[-1] if result else "ok",
+                next((x for x in result if isinstance(x, str)), "ok"),
             )
             return result
         except Exception as e:
@@ -340,8 +350,9 @@ def register_image_tools(
     ) -> List[Any]:
         """Generate an image from a text prompt using Gemini "Nano Banana".
 
-        Returns a downscaled inline preview image AND an HTTPS URL to download the
-        full-resolution image. Always share the full-resolution URL with the user.
+        Returns an info text (saved file path on the server + HTTPS URL to the
+        full-resolution image) followed by a downscaled inline preview image.
+        Always share the file path and full-resolution URL with the user.
 
         Parameters:
             prompt (str): Detailed description of the image to generate. Nano Banana
@@ -357,7 +368,8 @@ def register_image_tools(
             requester (str): Identifier of who is calling, used for request logging.
 
         Returns:
-            list: [inline preview image, info text with the full-resolution HTTPS URL]
+            list: [info text with saved file path and full-resolution HTTPS URL,
+            inline preview image]
 
         Notes:
             - Generation typically takes 15-25 seconds.
@@ -387,7 +399,8 @@ def register_image_tools(
         Provide one or more source images (as HTTPS URLs and/or base64 strings) plus an
         instruction describing the edit or composition (e.g. "place this product on a
         marble table", "combine these two people into one photo", "make it night time").
-        Returns a downscaled inline preview AND an HTTPS URL to the full-resolution result.
+        Returns an info text (saved file path + HTTPS URL to the full-resolution
+        result) followed by a downscaled inline preview.
 
         Parameters:
             prompt (str): The edit / composition instruction.
@@ -400,7 +413,8 @@ def register_image_tools(
             requester (str): Identifier of who is calling, used for request logging.
 
         Returns:
-            list: [inline preview image, info text with the full-resolution HTTPS URL]
+            list: [info text with saved file path and full-resolution HTTPS URL,
+            inline preview image]
 
         Example:
             edit_image(prompt="Put this character on a snowy mountain at sunrise",

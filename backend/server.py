@@ -67,6 +67,10 @@ if not PUBLIC_ASSET_BASE_URL:
         "Neither MCP_PUBLIC_BASE_URL nor MCP_PUBLIC_ASSET_BASE_URL is set; tools will "
         "return generated images inline only, with no downloadable HTTPS URL."
     )
+# Host-side path of the images dir (for display in tool responses). Inside the
+# container IMAGES_DIR is the mount target; this tells callers where the same
+# files live on the host.
+HOST_IMAGES_DIR = (os.getenv("MCP_HOST_IMAGES_DIR") or "").rstrip("/") or None
 
 # Tokens (also used to redact access logs). The middleware re-reads these itself.
 _TOKENS = {t.strip() for t in os.getenv("MCP_TOKENS", "").split(",") if t.strip()}
@@ -137,7 +141,7 @@ for _handler in logging.getLogger().handlers:
 logging.getLogger().addFilter(_redaction_filter)
 
 # --- Register tools + resources -------------------------------------------
-register_image_tools(mcp, IMAGES_DIR, REQUESTS_DIR, PUBLIC_ASSET_BASE_URL)
+register_image_tools(mcp, IMAGES_DIR, REQUESTS_DIR, PUBLIC_ASSET_BASE_URL, HOST_IMAGES_DIR)
 
 
 @mcp.resource(
